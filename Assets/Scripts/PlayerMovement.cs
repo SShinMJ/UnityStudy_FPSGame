@@ -36,6 +36,13 @@ public class PlayerMovement : MonoBehaviour
             isJumping = false;
         }
 
+        // 바닥에 닿아있을 경우엔, 수직 속도를 받지 않으므로
+        if (characterController.collisionFlags == CollisionFlags.Below)
+        {
+            // 수직 속도 초기화
+            yVelocity = 0;
+        }
+
         // 스페이스바(점프) 입력 시 점프 상태가 아니라면
         if (Input.GetButtonDown("Jump") && !isJumping) // == Input.GetKeyDown(KeyCode.Space)
         {
