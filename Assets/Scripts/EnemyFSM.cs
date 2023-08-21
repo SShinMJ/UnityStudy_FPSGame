@@ -7,6 +7,7 @@ using UnityEngine;
 // 목적2: 플레이어와의 거리에 따라 동작 상태를 변경한다.
 // 목적2-2 : Idle의 경우, 일정 범위 이내에 플레이어가 있다면 Move 상태로 변경.
 // 목적2-2 : Move의 경우, 플레이어를 따라간다. 공격 범위 이내라면 Attack 상태로 변경.
+// 목적2-3 : Attack의 경우, 플레이어를 공격한다. 공격 범위를 벗어나면 Move 상태로 변경.
 public class EnemyFSM : MonoBehaviour
 {
     // 1. 적의 현재 상태(대기, 이동, 공격, 원위치, 피격, 죽음)
@@ -34,6 +35,10 @@ public class EnemyFSM : MonoBehaviour
     CharacterController characterController;
     // 공격 범위
     public float attackDistance = 2f;
+
+    // 2-3. 공격 간격(시간)
+    float currentTime = 0;
+    public float attackDelay = 2f;
 
     void Start()
     {
@@ -109,7 +114,30 @@ public class EnemyFSM : MonoBehaviour
 
     private void Attack()
     {
-        throw new NotImplementedException();
+        // 플레이어와의 거리 측정
+        float distanceToPlayer = (player.position - transform.position).magnitude;
+        //             = Vector3.Distance(transform.position, player.position);
+
+        // 플레이어와의 거리가 공격 범위 내라면
+        if (distanceToPlayer < attackDistance)
+        {
+            currentTime += Time.deltaTime;
+
+            // 일정 시간마다 플레이어를 공격한다
+            if (currentTime > attackDelay)
+            {
+                print("!!!!플레이어를 공격함!!!!");
+
+                currentTime = 0;
+            }
+        }
+        // 공격 범위 밖이라면
+        else
+        {
+            // Move 상태로 전환
+            print("적 상태전환 : 공격 > 따라감");
+            enemyState = EnemyState.Move;
+        }
     }
 
     private void Return()
