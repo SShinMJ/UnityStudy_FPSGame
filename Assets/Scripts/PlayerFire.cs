@@ -17,6 +17,8 @@ public class PlayerFire : MonoBehaviour
     public GameObject hitEffect;
     // 이펙트 파티클 시스템
     ParticleSystem particleSys;
+    // 피격 데미지
+    public int weaponPower = 2;
 
     private void Start()
     {
@@ -58,8 +60,14 @@ public class PlayerFire : MonoBehaviour
                 hitEffect.transform.forward = hitInfo.normal;
 
                 // 피격 이팩트를 재생한다.
-                if (!particleSys.isPlaying) // 재생할 때
-                    particleSys.Play();
+                particleSys.Play();
+
+                // 피격 대상이 적이라면 데미지 주기
+                if(hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("Enemy"))
+                {
+                    EnemyFSM enemyFSM = hitInfo.transform.GetComponent<EnemyFSM>();
+                    enemyFSM.DamageAction(weaponPower);
+                }
             }
         }
     }

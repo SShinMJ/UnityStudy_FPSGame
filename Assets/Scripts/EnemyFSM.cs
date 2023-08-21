@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 // 목적 : 적의 FSM 다이어그램에 따라 동작시킨다.
@@ -7,6 +8,8 @@ using UnityEngine;
 // 목적2-2 : Move의 경우, 플레이어를 따라간다. 공격 범위 이내라면 Attack 상태로 변경.
 // 목적2-3 : Attack의 경우, 플레이어를 공격한다. 공격 범위를 벗어나면 Move 상태로 변경.
 // 목적2-4 : Return의 경우, 기존 생성 위치로 돌아간다. 원위치로 돌아간 경우 Idle 상태로 변경.
+// 목적2-5 : Damaged의 경우, 플레이어의 공격을 받으면 플레이어의 hitDamage만큼 hp 감소.
+// 목적3: 피격(레이가 부딪힌) 대상이 Enemy라면 Enemy에게 데미지 입히기.
 public class EnemyFSM : MonoBehaviour
 {
     // 1. 적의 현재 상태(대기, 이동, 공격, 원위치, 피격, 죽음)
@@ -48,6 +51,9 @@ public class EnemyFSM : MonoBehaviour
     // 원위치 오차 범위
     public float minRetrunDistance = 0.3f;
 
+    // 2-5. 적 hp
+    public int enemyHp = 3;
+
     void Start()
     {
         // 시작 시, 적의 상태는 대기 상태.
@@ -73,7 +79,7 @@ public class EnemyFSM : MonoBehaviour
                 break;
             case EnemyState.Move:
                 Move();
-                break; 
+                break;
             case EnemyState.Attack:
                 Attack();
                 break;
@@ -81,10 +87,12 @@ public class EnemyFSM : MonoBehaviour
                 Return();
                 break;
             case EnemyState.Damaged:
-                Damaged();
+                //Damaged();
+                break;
+            case EnemyState.Die:
+                //Die();
                 break;
         }
-        
     }
 
     private void Idle()
@@ -94,7 +102,7 @@ public class EnemyFSM : MonoBehaviour
         //             = Vector3.Distance(transform.position, player.position);
 
         // 플레이어와의 거리가 특정 거리 이내가 되면,
-        if(distanceToPlayer < findDistance)
+        if (distanceToPlayer < findDistance)
         {
             // 동작 상태를 Move로 바꿔준다.
             print("적 상태전환 : 대기 > 따라감");
@@ -185,9 +193,65 @@ public class EnemyFSM : MonoBehaviour
             enemyState = EnemyState.Idle;
         }
     }
+
+    // 플레이어의 공격을 받으면
     private void Damaged()
     {
-        throw new NotImplementedException();
+        // 피격 모션 0.5초 재생
+
+
+        // 피격 상태 처리를 위한 코루틴 실행
+        StartCoroutine(DamageProcess());
+    }
+
+    // 플레이어의 hitDamage만큼 hp 감소.
+    public void DamageAction(int damage)
+    {
+        // 이미 적이 피격되가나 사망 상태라면 데미지 주기x
+        if (enemyState == EnemyState.Damaged || enemyState == EnemyState.Die)
+            return;
+
+        enemyHp -= damage;
+
+        if (enemyHp > 0)
+        {
+            print("적 상태전환 : 피격당함 > 따라감");
+            enemyState = EnemyState.Damaged;
+            Damaged();
+        }
+        else
+        {
+            print("적 상태전환 : 피격당함 > 죽음");
+            enemyState = EnemyState.Die;
+            Die();
+        }
+    }
+
+    // 데미지 처리용
+    IEnumerator DamageProcess()
+    {
+        // 피격 모션 시간만큼 대기.
+        yield return new WaitForSeconds(0.5f);
+
+        // 피격 모션이 끝나면 적 동작 상태를 Move로 바꾼다.
+        print("적 상태전환 : 피격당함 > 따라감");
+        enemyState = EnemyState.Move;
+    }
+
+
+    void Die()
+    {
+        StopAllCoroutines();
+
+        StartCoroutine(DieProcess());
+    }
+
+    // 2초 후에 적 오브젝트(자신) 제거
+    IEnumerator DieProcess()
+    {
+        yield return new WaitForSeconds(2f);
+
+        print("사망");
+        Destroy(gameObject);
     }
 }
-
