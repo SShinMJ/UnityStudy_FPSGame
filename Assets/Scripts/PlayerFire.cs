@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 
 // 목적 : 마우스 오른쪽 버튼을 눌러 폭탄을 특정 위치에 생성하고, 정면으로 발사.
 // 목적2: 마우스 왼쪽 버튼을 눌러 시선 방향으로 총을 발사.
@@ -57,7 +58,8 @@ public class PlayerFire : MonoBehaviour
                 hitEffect.transform.forward = hitInfo.normal;
 
                 // 피격 이팩트를 재생한다.
-                particleSys.Play();
+                if (!particleSys.isPlaying) // 재생할 때
+                    particleSys.Play();
             }
         }
     }
