@@ -4,6 +4,8 @@ using UnityEngine;
 
 // W, A, S, D 입력 이동
 // 캐릭터 컨트롤러 : '스페이스바'-수직점프
+
+// 목적2 : 플레이어가 공격을 받으면 hp가 damage만큼 감소.
 public class PlayerMovement : MonoBehaviour
 {
     public float speed = 5f;
@@ -17,6 +19,9 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce = 5f;
     // 점프 상태 변수
     public bool isJumping = false;
+
+    // hp
+    public float playerHp = 10f;
 
     private void Start()
     {
@@ -64,5 +69,11 @@ public class PlayerMovement : MonoBehaviour
         //transform.position += dir * speed * Time.deltaTime;
         // 2) 캐릭터 컨트롤러로 플레이어 이동
         characterController.Move(dir * speed * Time.deltaTime);
+    }
+
+    // 2. hp가 damage만큼 감소.
+    public void DamageAction(int damage)
+    {
+        playerHp -= damage;
     }
 }

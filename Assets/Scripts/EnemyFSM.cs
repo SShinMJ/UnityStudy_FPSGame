@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 // 목적 : 적의 FSM 다이어그램에 따라 동작시킨다.
@@ -8,6 +6,7 @@ using UnityEngine;
 // 목적2-2 : Idle의 경우, 일정 범위 이내에 플레이어가 있다면 Move 상태로 변경.
 // 목적2-2 : Move의 경우, 플레이어를 따라간다. 공격 범위 이내라면 Attack 상태로 변경.
 // 목적2-3 : Attack의 경우, 플레이어를 공격한다. 공격 범위를 벗어나면 Move 상태로 변경.
+// 목적2-4 : Return의 경우, 기존 생성 위치로 돌아간다. 원위치로 돌아간 경우 Idle 상태로 변경.
 public class EnemyFSM : MonoBehaviour
 {
     // 1. 적의 현재 상태(대기, 이동, 공격, 원위치, 피격, 죽음)
@@ -39,6 +38,15 @@ public class EnemyFSM : MonoBehaviour
     // 2-3. 공격 간격(시간)
     float currentTime = 0;
     public float attackDelay = 2f;
+    // 공격 데미지
+    public int attackPower = 1;
+
+    // 2-4. 초기 위치
+    Vector3 originPos;
+    // 최대 이동 범위
+    public float maxMoveDistance = 20f;
+    // 원위치 오차 범위
+    public float minRetrunDistance = 0.3f;
 
     void Start()
     {
@@ -50,6 +58,9 @@ public class EnemyFSM : MonoBehaviour
 
         // 적 오브젝트 컨트롤러 받아오기
         characterController = GetComponent<CharacterController>();
+
+        // 초기 위치 저장
+        originPos = transform.position;
     }
 
     void Update()
@@ -96,8 +107,17 @@ public class EnemyFSM : MonoBehaviour
         // magnitude : (피타고라스 정의에 의한)벡터의 길이를 반환한다. 즉, 거리(크기)를 의미한다.
         float distanceToPlayer = (player.position - transform.position).magnitude;
 
+        // 초기 위치에서 적과의 거리
+        float distanceToOriginPos = (originPos - transform.position).magnitude;
+
+        // 플레이어를 따라가다 초기 위치에서 일정 거리를 벗어나면
+        if (distanceToOriginPos > maxMoveDistance)
+        {
+            enemyState = EnemyState.Return;
+            print("적 상태전환 : 따라감 > 돌아감");
+        }
         // 플레이어와의 거리가 공격 범위 밖이면
-        if (distanceToPlayer > attackDistance)
+        else if (distanceToPlayer > attackDistance)
         {
             // 플레이어를 따라간다. (normalized : 방향벡터를 1크기로 평준화하여 단위벡터(방향벡터)로 만듦)
             Vector3 dir = (player.position - transform.position).normalized;
@@ -109,6 +129,8 @@ public class EnemyFSM : MonoBehaviour
             // 동작 상태를 Attack으로 바꿔준다.
             print("적 상태전환 : 따라감 > 공격");
             enemyState = EnemyState.Attack;
+            // 바로 공격
+            currentTime = attackDelay;
         }
     }
 
@@ -123,10 +145,11 @@ public class EnemyFSM : MonoBehaviour
         {
             currentTime += Time.deltaTime;
 
-            // 일정 시간마다 플레이어를 공격한다
+            // 일정 시간마다
             if (currentTime > attackDelay)
             {
-                print("!!!!플레이어를 공격함!!!!");
+                // 플레이어를 공격한다. 플레이어의 hp가 attackPower만큼 감소한다.
+                player.GetComponent<PlayerMovement>().DamageAction(attackPower);
 
                 currentTime = 0;
             }
@@ -142,7 +165,25 @@ public class EnemyFSM : MonoBehaviour
 
     private void Return()
     {
-        throw new NotImplementedException();
+        // 플레이어와의 거리 측정
+        float distanceToPlayer = (player.position - transform.position).magnitude;
+
+        // 초기 위치에서 적과의 거리
+        float distanceToOriginPos = (originPos - transform.position).magnitude;
+
+        // 초기 위치로 돌아가지 못했다면 계속해서 원위치로 이동
+        if (distanceToOriginPos > minRetrunDistance)
+        {
+            Vector3 dir = (originPos - transform.position).normalized;
+            characterController.Move(dir * moveSpeed * Time.deltaTime);
+        }
+        // 원위치로 돌아왔다면
+        else
+        {
+            // 대기(Idle)로 상태 변환
+            print("적 상태전환 : 원위치 > 대기");
+            enemyState = EnemyState.Idle;
+        }
     }
     private void Damaged()
     {
