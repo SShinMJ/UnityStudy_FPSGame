@@ -52,8 +52,11 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        // 3. 현재 플레이어 hp를 hp슬라이더에 적용
+        hpSlider.value = (float)playerHp / (float)maxHp;
+
         // GameManager에서 'Start' 상태가 아니라면 조작 불가.
-        if(GameManager.Instance.status != GameManager.GameStatus.Start)
+        if (GameManager.Instance.status != GameManager.GameStatus.Start)
         {
             return;
         }
@@ -97,9 +100,6 @@ public class PlayerMovement : MonoBehaviour
         //transform.position += dir * speed * Time.deltaTime;
         // 2) 캐릭터 컨트롤러로 플레이어 이동
         characterController.Move(dir * speed * Time.deltaTime);
-
-        // 3. 현재 플레이어 hp를 hp슬라이더에 적용
-        hpSlider.value = (float)playerHp / (float)maxHp;
     }
 
     // 2. hp가 damage만큼 감소.
