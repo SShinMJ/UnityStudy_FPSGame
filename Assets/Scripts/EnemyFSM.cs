@@ -12,6 +12,9 @@ using UnityEngine.UI;
 // 목적2-5 : Damaged의 경우, 플레이어의 공격을 받으면 플레이어의 hitDamage만큼 hp 감소.
 // 목적3: 피격(레이가 부딪힌) 대상이 Enemy라면 Enemy에게 데미지 입히기.
 // 목적4: 적 hp(%)를 hp 슬라이더에 적용.
+
+// [Alpha upgrade]
+// 목적5 : Idle 상태에서 Move 상태로 Animation을 전환.
 public class EnemyFSM : MonoBehaviour
 {
     // 1. 적의 현재 상태(대기, 이동, 공격, 원위치, 피격, 죽음)
@@ -61,6 +64,9 @@ public class EnemyFSM : MonoBehaviour
     // Slider
     public Slider hpSlider;
 
+    // 5. Animator
+    Animator animator;
+
     void Start()
     {
         // 시작 시, 적의 상태는 대기 상태.
@@ -76,6 +82,9 @@ public class EnemyFSM : MonoBehaviour
         originPos = transform.position;
 
         maxHp = enemyHp;
+
+        // 애니메이터 캐싱
+        animator = GetComponentInChildren<Animator>();
     }
 
     void Update()
@@ -125,6 +134,9 @@ public class EnemyFSM : MonoBehaviour
             // 동작 상태를 Move로 바꿔준다.
             print("적 상태전환 : 대기 > 따라감");
             enemyState = EnemyState.Move;
+
+            // 'Move' Animation으로 전환을 위해 트리거 발동
+            animator.SetTrigger("IdleToMove");
         }
     }
 
@@ -148,6 +160,7 @@ public class EnemyFSM : MonoBehaviour
             // 플레이어를 따라간다. (normalized : 방향벡터를 1크기로 평준화하여 단위벡터(방향벡터)로 만듦)
             Vector3 dir = (player.position - transform.position).normalized;
             characterController.Move(dir * moveSpeed * Time.deltaTime);
+            transform.forward = dir;
         }
         // 플레이어와의 거리가 공격 범위 안이면
         else if (distanceToPlayer < attackDistance)
@@ -155,6 +168,10 @@ public class EnemyFSM : MonoBehaviour
             // 동작 상태를 Attack으로 바꿔준다.
             print("적 상태전환 : 따라감 > 공격");
             enemyState = EnemyState.Attack;
+
+            // 'Attack' Animation으로 전환을 위해 트리거 발동
+            animator.SetTrigger("MoveToAttack");
+
             // 바로 공격
             currentTime = attackDelay;
         }
@@ -174,10 +191,10 @@ public class EnemyFSM : MonoBehaviour
             // 일정 시간마다
             if (currentTime > attackDelay)
             {
-                // 플레이어를 공격한다. 플레이어의 hp가 attackPower만큼 감소한다.
-                player.GetComponent<PlayerMovement>().DamageAction(attackPower);
-
                 currentTime = 0;
+
+                // 공격 애니메이션 딜레이를 위한 트리거
+                animator.SetTrigger("DelayToAttack");
             }
         }
         // 공격 범위 밖이라면
@@ -186,7 +203,16 @@ public class EnemyFSM : MonoBehaviour
             // Move 상태로 전환
             print("적 상태전환 : 공격 > 따라감");
             enemyState = EnemyState.Move;
+
+            // 다시 Move 애니메이션으로 전환
+            animator.SetTrigger("AttackToMove");
         }
+    }
+
+    public void AttackAction()
+    {
+        // 플레이어를 공격한다. 플레이어의 hp가 attackPower만큼 감소한다.
+        player.GetComponent<PlayerMovement>().DamageAction(attackPower);
     }
 
     private void Return()
@@ -202,6 +228,7 @@ public class EnemyFSM : MonoBehaviour
         {
             Vector3 dir = (originPos - transform.position).normalized;
             characterController.Move(dir * moveSpeed * Time.deltaTime);
+            transform.forward = dir;
         }
         // 원위치로 돌아왔다면
         else
@@ -209,17 +236,23 @@ public class EnemyFSM : MonoBehaviour
             // 대기(Idle)로 상태 변환
             print("적 상태전환 : 원위치 > 대기");
             enemyState = EnemyState.Idle;
+
+            // 다시 Idle 애니메이션으로 전환
+            animator.SetTrigger("MoveToIdle");
         }
     }
 
     // 플레이어의 공격을 받으면
     private void Damaged()
     {
-        // 피격 모션 0.5초 재생
-
+        // 피격 애니메이션으로 전환
+        animator.SetTrigger("Dameged");
 
         // 피격 상태 처리를 위한 코루틴 실행
         StartCoroutine(DamageProcess());
+
+        // 피격 처리가 끝나면 다시 'Move' 애니메이션으로 전환
+        animator.SetTrigger("DamegedToMove");
     }
 
     // 플레이어의 hitDamage만큼 hp 감소.
@@ -259,6 +292,12 @@ public class EnemyFSM : MonoBehaviour
 
     void Die()
     {
+        // 사망 애니메이션으로 전환
+        if (transform.forward == (player.position - transform.position).normalized)
+            animator.SetTrigger("DieBack");
+        else
+            animator.SetTrigger("DieForward");
+
         StopAllCoroutines();
 
         StartCoroutine(DieProcess());
