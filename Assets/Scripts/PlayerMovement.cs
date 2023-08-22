@@ -13,6 +13,8 @@ using UnityEngine.UI;
 
 // 목적4 : 적의 공격을 받을 때, Hit Image를 켰다가 끈다.
 // 목적5 : hp가 0이된 경우 hit Image의 알파값을 255로 만든다.
+
+// 목적6 : GameManager의 'Ready'상태에는 플레이어, 적 모두 움직일 수 없다.
 public class PlayerMovement : MonoBehaviour
 {
     public float speed = 5f;
@@ -50,6 +52,12 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        // GameManager에서 'Start' 상태가 아니라면 조작 불가.
+        if(GameManager.Instance.status != GameManager.GameStatus.Start)
+        {
+            return;
+        }
+
         // 입력 받기
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
@@ -146,8 +154,5 @@ public class PlayerMovement : MonoBehaviour
                 break;
             }
         }
-
-        // hitImage 비활성화
-        hitImg.SetActive(false);
     }
 }

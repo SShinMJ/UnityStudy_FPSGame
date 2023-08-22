@@ -27,6 +27,12 @@ public class PlayerFire : MonoBehaviour
 
     void Update()
     {
+        // GameManager에서 'Start' 상태가 아니라면 조작 불가.
+        if (GameManager.Instance.status != GameManager.GameStatus.Start)
+        {
+            return;
+        }
+
         // 마우스 오른쪽 버튼을 클릭하면
         if (Input.GetMouseButtonDown(1))  // 마우스 왼쪽 : 0, 오른쪽 : 1, 휠 : 2
         {

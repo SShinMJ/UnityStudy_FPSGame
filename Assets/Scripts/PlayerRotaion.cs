@@ -9,6 +9,12 @@ public class PlayerRotaion : MonoBehaviour
     public float speed = 10f;
     void Update()
     {
+        // GameManager에서 'Start' 상태가 아니라면 조작 불가.
+        if (GameManager.Instance.status != GameManager.GameStatus.Start)
+        {
+            return;
+        }
+
         // 1. 마우스 입력 받기(X 좌표 값만, 마우스 이동 속도)
         float mouseX = Input.GetAxis("Mouse X");
         Vector3 dir = new Vector3(0, mouseX, 0);

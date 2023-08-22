@@ -80,6 +80,12 @@ public class EnemyFSM : MonoBehaviour
 
     void Update()
     {
+        // GameManager에서 'Start' 상태가 아니라면 조작 불가.
+        if (GameManager.Instance.status != GameManager.GameStatus.Start)
+        {
+            return;
+        }
+
         // 적 동작 상태 변경
         switch (enemyState)
         {
