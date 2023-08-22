@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 // 목적 : 적의 FSM 다이어그램에 따라 동작시킨다.
 // 목적2: 플레이어와의 거리에 따라 동작 상태를 변경한다.
@@ -10,6 +11,7 @@ using UnityEngine;
 // 목적2-4 : Return의 경우, 기존 생성 위치로 돌아간다. 원위치로 돌아간 경우 Idle 상태로 변경.
 // 목적2-5 : Damaged의 경우, 플레이어의 공격을 받으면 플레이어의 hitDamage만큼 hp 감소.
 // 목적3: 피격(레이가 부딪힌) 대상이 Enemy라면 Enemy에게 데미지 입히기.
+// 목적4: 적 hp(%)를 hp 슬라이더에 적용.
 public class EnemyFSM : MonoBehaviour
 {
     // 1. 적의 현재 상태(대기, 이동, 공격, 원위치, 피격, 죽음)
@@ -54,6 +56,11 @@ public class EnemyFSM : MonoBehaviour
     // 2-5. 적 hp
     public int enemyHp = 3;
 
+    // 4. maxHP
+    int maxHp = 3;
+    // Slider
+    public Slider hpSlider;
+
     void Start()
     {
         // 시작 시, 적의 상태는 대기 상태.
@@ -67,6 +74,8 @@ public class EnemyFSM : MonoBehaviour
 
         // 초기 위치 저장
         originPos = transform.position;
+
+        maxHp = enemyHp;
     }
 
     void Update()
@@ -93,6 +102,9 @@ public class EnemyFSM : MonoBehaviour
                 //Die();
                 break;
         }
+
+        // 4. 현재 적 hp를 hp슬라이더에 적용
+        hpSlider.value = (float)enemyHp / (float)maxHp;
     }
 
     private void Idle()

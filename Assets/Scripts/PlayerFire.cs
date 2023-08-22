@@ -18,7 +18,7 @@ public class PlayerFire : MonoBehaviour
     // 이펙트 파티클 시스템
     ParticleSystem particleSys;
     // 피격 데미지
-    public int weaponPower = 2;
+    public int weaponPower = 1;
 
     private void Start()
     {
