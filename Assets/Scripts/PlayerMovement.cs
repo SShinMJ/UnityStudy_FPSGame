@@ -15,6 +15,8 @@ using UnityEngine.UI;
 // 목적5 : hp가 0이된 경우 hit Image의 알파값을 255로 만든다.
 
 // 목적6 : GameManager의 'Ready'상태에는 플레이어, 적 모두 움직일 수 없다.
+
+// 목적7 : 플레이어의 자식 중 모델링 오브젝트에 있는 애니메이터 컴포넌트를 가져와서 블랜딩 트리 호출.
 public class PlayerMovement : MonoBehaviour
 {
     public float speed = 5f;
@@ -44,10 +46,16 @@ public class PlayerMovement : MonoBehaviour
     float currentTime;
     public float hitImageEndTime = 3f;
 
+    // 7. 모델링 오브젝트의 애니메이터
+    Animator animator;
+
     private void Start()
     {
         characterController = GetComponent<CharacterController>();
         maxHp = playerHp;
+
+        // 7. 자식 중 모델링 오브젝트의 애니메이터 가져오기
+        animator = GetComponentInChildren<Animator>();
     }
 
     void Update()
@@ -100,6 +108,10 @@ public class PlayerMovement : MonoBehaviour
         //transform.position += dir * speed * Time.deltaTime;
         // 2) 캐릭터 컨트롤러로 플레이어 이동
         characterController.Move(dir * speed * Time.deltaTime);
+
+        // 7. 애니메이터의 파라미터 가져오기 (Idle 모션에서 Move으로 변경해주는 변수)
+        // dir.magnitude : 카메라가 보는 방향으로 모션이 나올 수 있게 한다.
+        animator.SetFloat("MoveMotion", dir.magnitude);
     }
 
     // 2. hp가 damage만큼 감소.

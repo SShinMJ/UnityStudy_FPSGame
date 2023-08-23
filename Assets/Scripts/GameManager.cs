@@ -8,6 +8,8 @@ using UnityEngine;
 //       'Ready'상태에는 플레이어, 적 모두 움직일 수 없다.
 
 // 목적2: player의 hp가 0보다 작거나 같으면, 'GameOver' 상태로 바꾸고, 텍스트를 보이게 한다.
+
+// 목적3: 플레이어의 hp가 0 이하라면 애니메이션을 멈춘다.
 public class GameManager : MonoBehaviour
 {
     // 싱글톤 선엉
@@ -29,6 +31,8 @@ public class GameManager : MonoBehaviour
     // hp가 들어있는 playerMove
     PlayerMovement player;
 
+    Animator animator;
+
     private void Awake()
     {
         if (Instance == null)
@@ -45,6 +49,8 @@ public class GameManager : MonoBehaviour
         StartCoroutine(GameStart());
 
         player = GameObject.Find("Player").GetComponent<PlayerMovement>();
+
+        animator = GetComponentInChildren<Animator>();
     }
 
     IEnumerator GameStart()
@@ -70,6 +76,9 @@ public class GameManager : MonoBehaviour
     {
         if(player.playerHp <= 0)
         {
+            // 애니메이션 멈추기
+            animator.SetFloat("Movemotion", 0f);
+
             // 텍스트 보이기
             gameStatusTxt.gameObject.SetActive(true);
             // 텍스트 변경

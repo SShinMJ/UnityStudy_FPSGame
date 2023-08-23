@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.UI;
 
 // 목적 : 적의 FSM 다이어그램에 따라 동작시킨다.
@@ -15,6 +16,10 @@ using UnityEngine.UI;
 
 // [Alpha upgrade]
 // 목적5 : Idle 상태에서 Move 상태로 Animation을 전환.
+
+// 목적6 : 네비게이션 에이전트의 최소 거리를 입력 후, 이에 따라 플레이어를 따라갈 수 있도록 한다.
+// 목적7 : 네비게이션 에이전트의 이동을 멈추고, 네비게이션 경로 초기화.
+// 목적8 : Enemy의 초기 속도를 Agent의 속도에 적용.
 public class EnemyFSM : MonoBehaviour
 {
     // 1. 적의 현재 상태(대기, 이동, 공격, 원위치, 피격, 죽음)
@@ -67,6 +72,9 @@ public class EnemyFSM : MonoBehaviour
     // 5. Animator
     Animator animator;
 
+    // 6. 네비게이션 에이전트
+    NavMeshAgent navMeshAgent;
+
     void Start()
     {
         // 시작 시, 적의 상태는 대기 상태.
@@ -85,6 +93,12 @@ public class EnemyFSM : MonoBehaviour
 
         // 애니메이터 캐싱
         animator = GetComponentInChildren<Animator>();
+
+        // 네비게이션 에이전트 캐싱
+        navMeshAgent = GetComponent<NavMeshAgent>();
+
+        // 8. 네비게이션 에이전트에 속도값 지정
+        navMeshAgent.speed = moveSpeed;
     }
 
     void Update()
@@ -158,9 +172,17 @@ public class EnemyFSM : MonoBehaviour
         else if (distanceToPlayer > attackDistance)
         {
             // 플레이어를 따라간다. (normalized : 방향벡터를 1크기로 평준화하여 단위벡터(방향벡터)로 만듦)
-            Vector3 dir = (player.position - transform.position).normalized;
+            /*Vector3 dir = (player.position - transform.position).normalized;
             characterController.Move(dir * moveSpeed * Time.deltaTime);
-            transform.forward = dir;
+            transform.forward = dir;*/
+
+            // 7. 이동을 멈추고 경로 초기화.
+            navMeshAgent.isStopped = true;
+            navMeshAgent.ResetPath();
+
+            // 6. 네비게이션 에이전트의 최소 거리 입력, 플레이어 쫓아감.
+            navMeshAgent.stoppingDistance = attackDistance;
+            navMeshAgent.SetDestination(player.position);
         }
         // 플레이어와의 거리가 공격 범위 안이면
         else if (distanceToPlayer < attackDistance)
@@ -226,13 +248,23 @@ public class EnemyFSM : MonoBehaviour
         // 초기 위치로 돌아가지 못했다면 계속해서 원위치로 이동
         if (distanceToOriginPos > minRetrunDistance)
         {
-            Vector3 dir = (originPos - transform.position).normalized;
-            characterController.Move(dir * moveSpeed * Time.deltaTime);
-            transform.forward = dir;
+            /*            Vector3 dir = (originPos - transform.position).normalized;
+                        characterController.Move(dir * moveSpeed * Time.deltaTime);
+                        transform.forward = dir;*/
+
+            // 7. 목적지를 초기 위치로 설정
+            navMeshAgent.destination = originPos;
+
+            // 7. 네비게이션으로 접근하는 최소거리 초기화
+            navMeshAgent.stoppingDistance = 0;
         }
         // 원위치로 돌아왔다면
         else
         {
+            // 6. 멈춤 상태로 변경 및 경로 초기화
+            navMeshAgent.isStopped = true;
+            navMeshAgent.ResetPath();
+
             // 대기(Idle)로 상태 변환
             print("적 상태전환 : 원위치 > 대기");
             enemyState = EnemyState.Idle;
@@ -263,6 +295,10 @@ public class EnemyFSM : MonoBehaviour
             return;
 
         enemyHp -= damage;
+
+        // 7. 네비게이션 에이전트의 이동을 멈추고, 초기화
+        navMeshAgent.isStopped = true;
+        navMeshAgent.ResetPath();
 
         if (enemyHp > 0)
         {

@@ -5,6 +5,9 @@ using static UnityEngine.ParticleSystem;
 
 // 목적 : 마우스 오른쪽 버튼을 눌러 폭탄을 특정 위치에 생성하고, 정면으로 발사.
 // 목적2: 마우스 왼쪽 버튼을 눌러 시선 방향으로 총을 발사.
+
+// 목적3: 이동 Blend Tree의 파라미터 값이 0일 때, Attack Trigger 시전.
+//                        (Blend Tree가 수행중일 때 tigger을 키면 오류날 수 있음)
 public class PlayerFire : MonoBehaviour
 {
     // 폭탄 게임 오브젝트
@@ -20,9 +23,15 @@ public class PlayerFire : MonoBehaviour
     // 피격 데미지
     public int weaponPower = 1;
 
+    // 3. 자식 오브젝트의 애니메이터
+    Animator animator;
+
     private void Start()
     {
         particleSys = hitEffect.GetComponent<ParticleSystem>();
+
+        // 3. 자식 오브젝트의 애니메이터
+        animator = GetComponentInChildren<Animator>();
     }
 
     void Update()
@@ -49,6 +58,14 @@ public class PlayerFire : MonoBehaviour
         // 마우스 왼쪽 버튼을 클릭하면
         if (Input.GetMouseButtonDown(0))
         {
+            Debug.Log(animator.GetFloat("MoveMotion"));
+            // Blend Tree의 파라미터 값이 0이면,
+            if (animator.GetFloat("MoveMotion") <= 0.1)
+            {
+                // 피격 애니메이션 실행
+                animator.SetTrigger("Attack");
+            }
+
             // 레이캐스팅을 생성하고 발사 위치와 발사 방향을 설정한다.
             // Ray는 구조체로 구성되어 있다.여러가지 자료형을 넣을 수 있으며 묶을 수 있다.
             Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
