@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // 목적 : 게임의 상태를 구별하고, 게임의 시작과 끝을 Text UI로 표현.
 //       'Ready'상태에서 2초 후 'Start' 상태로 변경되며 게임 시작.
@@ -11,16 +12,20 @@ using UnityEngine;
 // 목적2: player의 hp가 0보다 작거나 같으면, 'GameOver' 상태로 바꾸고, 텍스트를 보이게 한다.
 
 // 목적3: 플레이어의 hp가 0 이하라면 애니메이션을 멈춘다.
+
+// 목적4: Setting 버튼을 누르면 Option UI가 켜진다. 동시에 게임 속도를 조절한다.(0 or 1)
+// 목적5: 게임 오버 시 Retry, Exit 버튼을 활성화.
 public class GameManager : MonoBehaviour
 {
     // 싱글톤 선엉
     public static GameManager Instance;
 
-    // 게임 상태
+    // 게임 상태 (4. 일시정지 추가)
     public enum GameStatus
     {
         Ready,
         Start,
+        Pause,
         GameOver
     }
 
@@ -33,6 +38,9 @@ public class GameManager : MonoBehaviour
     PlayerMovement player;
 
     Animator animator;
+
+    // 4. OptionUI 게임 오브젝트
+    public GameObject optionUI;
 
     private void Awake()
     {
@@ -78,7 +86,7 @@ public class GameManager : MonoBehaviour
         if(player.playerHp <= 0)
         {
             // 애니메이션 멈추기
-            animator.SetFloat("Movemotion", 0f);
+            //animator.SetFloat("MoveMotion", 0f);
 
             // 텍스트 보이기
             gameStatusTxt.gameObject.SetActive(true);
@@ -86,6 +94,16 @@ public class GameManager : MonoBehaviour
             gameStatusTxt.text = "Game Over";
             // 빨간색 텍스트
             gameStatusTxt.color = new Color(255, 0, 0, 255);
+
+            // Retry, Exit 버튼 활성화
+            GameObject retryBtn = gameStatusTxt.transform.GetChild(0).gameObject;
+            retryBtn.SetActive(true);
+            GameObject exitBtn = gameStatusTxt.transform.GetChild(1).gameObject;
+            exitBtn.SetActive(true);
+
+            // HP바와 Weapon Mode Text를 비활성화.
+            player.hpSlider.gameObject.SetActive(false);
+            player.GetComponent<PlayerFire>().weaponModeTxt.gameObject.SetActive(false);
 
             // 게임 상태 변경
             status = GameStatus.GameOver;
@@ -100,5 +118,40 @@ public class GameManager : MonoBehaviour
     internal void SetActive(bool v)
     {
         throw new NotImplementedException();
+    }
+
+    // 4. optionUI 켜기
+    public void OpenOptionWindow()
+    {
+        // UI 창 띄우기
+        optionUI.SetActive(true);
+
+        // 게임 시간 흐르는 것 멈추기
+        Time.timeScale = 0;
+
+        // 멈춤 상태로 변경
+        status = GameStatus.Pause;
+    }
+    // 계속하기(Continue)
+    public void CloseOptionWindow()
+    {
+        optionUI.SetActive(false);
+
+        Time.timeScale = 1;
+
+        status = GameStatus.Start;
+    }
+    // 다시하기(Retry)
+    public void RestartGame()
+    {
+        Time.timeScale = 1;
+
+        // 현재 씬 번호를 다시 로드한다. GetActiveScene().buildIndex: 현재 살아있는 씬을 가져온다.
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    // 끝내기(Exit)
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }
