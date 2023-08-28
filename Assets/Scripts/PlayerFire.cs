@@ -12,6 +12,8 @@ using static UnityEngine.ParticleSystem;
 
 // 목적4: 키보드 특정 키 입력으로 무기 모드(일반/저격) 전환
 
+// 목적5: 총을 발사할 때, 일정 시간 후에 사라지는 총구 이팩트를 활성화한다.
+
 public class PlayerFire : MonoBehaviour
 {
     // 폭탄 게임 오브젝트
@@ -43,6 +45,9 @@ public class PlayerFire : MonoBehaviour
 
     // 무기 모드 확인 텍스트 UI
     public TMP_Text weaponModeTxt;
+
+    // 5. 총구 이팩트 배열
+    public GameObject[] fireFlashEffs;
 
     private void Start()
     {
@@ -105,7 +110,6 @@ public class PlayerFire : MonoBehaviour
         // 마우스 왼쪽 버튼을 클릭하면
         if (Input.GetMouseButtonDown(0))
         {
-            Debug.Log(animator.GetFloat("MoveMotion"));
             // Blend Tree의 파라미터 값이 0이면,
             if (animator.GetFloat("MoveMotion") <= 0.1)
             {
@@ -139,6 +143,9 @@ public class PlayerFire : MonoBehaviour
                     enemyFSM.DamageAction(weaponPower);
                 }
             }
+
+            // 5. 총구 이팩트 실행을 위한 코루틴 실행
+            StartCoroutine(ShootEffOn(0.05f));
         }
 
         // 4. 키보드 숫자 1번 키다운 : 무기모드-노멀모드
@@ -156,5 +163,17 @@ public class PlayerFire : MonoBehaviour
             weaponModeTxt.text = "Sniper Mode";
             weaponMode = WeaponMode.Sniper;
         }
+    }
+
+    // 5. 총 발사 시 일정 시간 후에 사라지는 총구 이팩트 활성화.
+    IEnumerator ShootEffOn(float duration)
+    {
+        // 랜덤한 총구 이팩트 활성화
+        int randNum = Random.Range(0, fireFlashEffs.Length-1);
+        fireFlashEffs[randNum].SetActive(true);
+
+        // 일정 시간 후에 사라진다.
+        yield return new WaitForSeconds(duration);
+        fireFlashEffs[randNum].SetActive(false);
     }
 }
