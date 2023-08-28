@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -94,5 +95,10 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         CheckGameOver();
+    }
+
+    internal void SetActive(bool v)
+    {
+        throw new NotImplementedException();
     }
 }

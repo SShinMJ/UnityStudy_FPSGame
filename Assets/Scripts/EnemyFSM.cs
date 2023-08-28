@@ -20,6 +20,8 @@ using UnityEngine.UI;
 // 목적6 : 네비게이션 에이전트의 최소 거리를 입력 후, 이에 따라 플레이어를 따라갈 수 있도록 한다.
 // 목적7 : 네비게이션 에이전트의 이동을 멈추고, 네비게이션 경로 초기화.
 // 목적8 : Enemy의 초기 속도를 Agent의 속도에 적용.
+
+// 목적9 : 에이전트가 NavMeshLink에 올라가고 내려간다면 점프 애니메이션을 넣는다.
 public class EnemyFSM : MonoBehaviour
 {
     // 1. 적의 현재 상태(대기, 이동, 공격, 원위치, 피격, 죽음)
@@ -171,6 +173,17 @@ public class EnemyFSM : MonoBehaviour
         // 플레이어와의 거리가 공격 범위 밖이면
         else if (distanceToPlayer > attackDistance)
         {
+            // 9. 오르고 내려가고 있다면
+            // isOnOffMeshLink : 에이전트가 현재 OffMeshLink에 위치하는 지 확인
+            if (navMeshAgent.isOnOffMeshLink)
+            {
+                // 점프 애니메이션 실행
+                // navMeshAgent가 있는 object를 반환한다.
+                object navMeshOwner = navMeshAgent.navMeshOwner;
+                // navMeshAgent 컴포넌트를 가지고 있는 오브젝트를 반환.
+                GameObject navMeshGo = (navMeshOwner as Component).gameObject;
+            }
+
             // 플레이어를 따라간다. (normalized : 방향벡터를 1크기로 평준화하여 단위벡터(방향벡터)로 만듦)
             /*Vector3 dir = (player.position - transform.position).normalized;
             characterController.Move(dir * moveSpeed * Time.deltaTime);
