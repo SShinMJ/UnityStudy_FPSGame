@@ -49,6 +49,16 @@ public class PlayerFire : MonoBehaviour
     // 5. 총구 이팩트 배열
     public GameObject[] fireFlashEffs;
 
+    // 초점1(라이플), 초점2(스나이퍼)
+    public GameObject crossHair1;
+    public GameObject crossHair2;
+    public GameObject crossHairZoom;
+
+    // 라이플, 스나이퍼, 수류탄 이미지
+    public GameObject rifleImg;
+    public GameObject sniperImg;
+    public GameObject grenadeImge;
+
     private void Start()
     {
         particleSys = hitEffect.GetComponent<ParticleSystem>();
@@ -57,7 +67,7 @@ public class PlayerFire : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
 
         // 무기 모드 초기화
-        weaponModeTxt.text = "Normal Mode";
+        weaponModeTxt.text = "Rifle Mode";
     }
 
     void Update()
@@ -95,12 +105,18 @@ public class PlayerFire : MonoBehaviour
                         // 플레이어 카메라의 시야각을 15도 좁힌다.
                         Camera.main.fieldOfView = 15;
                         isZoomMode = true;
+
+                        crossHairZoom.SetActive(true);
+                        crossHair2.SetActive(false);
                     }
                     // 줌모드 상태라면
                     else
                     {
                         Camera.main.fieldOfView = 60;
                         isZoomMode = false;
+
+                        crossHairZoom.SetActive(false);
+                        crossHair2.SetActive(true);
                     }
                     break;
             }
@@ -152,16 +168,30 @@ public class PlayerFire : MonoBehaviour
         //    키보드 숫자 2번 키다운 : 무기모드-스나이퍼모드
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            weaponModeTxt.text = "Normal Mode";
+            weaponModeTxt.text = "Rifle Mode";
             weaponMode = WeaponMode.Normal;
 
             // 카메라 FoV를 처음 상태로 초기화
             Camera.main.fieldOfView = 60;
+
+            crossHair1.SetActive(true);
+            crossHair2.SetActive(false);
+
+            rifleImg.SetActive(true);
+            sniperImg.SetActive(false);
+            grenadeImge.SetActive(true);
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             weaponModeTxt.text = "Sniper Mode";
             weaponMode = WeaponMode.Sniper;
+
+            crossHair1.SetActive(false);
+            crossHair2.SetActive(true);
+
+            rifleImg.SetActive(false);
+            sniperImg.SetActive(true);
+            grenadeImge.SetActive(false);
         }
     }
 
