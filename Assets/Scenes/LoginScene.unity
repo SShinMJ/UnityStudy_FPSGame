@@ -1643,7 +1643,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Padding: {x: 10, y: 3, z: 10, w: 3}
+  m_Padding: {x: 0, y: 3, z: 0, w: 3}
   m_Softness: {x: 0, y: 0}
 --- !u!1 &1767294667
 GameObject:
@@ -2177,7 +2177,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Padding: {x: 5, y: 3, z: 5, w: 3}
+  m_Padding: {x: 0, y: 3, z: 0, w: 3}
   m_Softness: {x: 0, y: 0}
 --- !u!1 &2083595091
 GameObject:
