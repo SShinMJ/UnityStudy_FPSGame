@@ -2,6 +2,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
@@ -12,6 +13,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public int maxPlayerNum = 5;
 
     public TMP_Text logText;
+
+    public int sceneNumber = 2;
 
     // 로비에 방을 만든다.
     public void CreatRoom()
@@ -29,6 +32,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         Debug.Log(System.Reflection.MethodBase.GetCurrentMethod().Name);
         Debug.Log("방에 입장됨.");
         logText.text = "Room Joined!";
+
+        SceneManager.LoadScene(sceneNumber);
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
