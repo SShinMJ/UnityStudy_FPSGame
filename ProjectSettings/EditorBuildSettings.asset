@@ -6,12 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/LoginScene.unity
-    guid: 3e70527d02336b949b736218019ea7b3
+    path: Assets/Scenes/PUNScenes/ConnectionScene.unity
+    guid: cb52a95994d825845820f27e833372c7
   - enabled: 1
-    path: Assets/Scenes/LoadingScene.unity
-    guid: 7cb5faf51cbe4a3408e56c044ebcb29f
+    path: Assets/Scenes/PUNScenes/LobbyScene.unity
+    guid: 75fab032ef491374fb150b21432dfda5
   - enabled: 1
-    path: Assets/Scenes/FPS_Study.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/Scenes/PUNScenes/TestGameScene.unity
+    guid: a5889de42a4813145a61bfd5413a6f8d
   m_configObjects: {}
