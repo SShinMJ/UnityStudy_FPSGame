@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class LoadingNextScene : MonoBehaviour
 {
     // 다음 진행할 씬 번호
-    public int sceneNumber = 2;
+    public string sceneName = "FPSGame";
 
     // 로딩 슬라이더, 로딩 텍스트
     public Slider loadingBar;
@@ -20,7 +20,7 @@ public class LoadingNextScene : MonoBehaviour
     void Start()
     {
         loadingText.text = "Loading...";
-        StartCoroutine(AsyncNextScene(sceneNumber));
+        StartCoroutine(AsyncNextScene(sceneName));
     }
 
     void Update()
@@ -30,7 +30,7 @@ public class LoadingNextScene : MonoBehaviour
 
     IEnumerator loadingTextCH()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1f);
 
         if (txtCnt > 3)
             txtCnt = 0;
@@ -47,10 +47,10 @@ public class LoadingNextScene : MonoBehaviour
     }
 
     // 비동기로 다음 씬 로드
-    IEnumerator AsyncNextScene(int num)
+    IEnumerator AsyncNextScene(string name)
     {
         // 저장된 씬을 비동기 방식으로 만든다.
-        AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(num);
+        AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(name);
 
         // allowSceneActivation : 씬이 화면에 보이는 여부
         asyncOperation.allowSceneActivation = false;
@@ -66,6 +66,9 @@ public class LoadingNextScene : MonoBehaviour
             {
                 // 90퍼 이상 로드되면 씬을 보이게 한다.
                 asyncOperation.allowSceneActivation = true;
+
+                MainGameManager.Instance.setSpawnPoints();
+                MainGameManager.Instance.StartTimer();
             }
 
             yield return null;

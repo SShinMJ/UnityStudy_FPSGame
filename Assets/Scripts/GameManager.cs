@@ -1,3 +1,5 @@
+using Photon.Pun;
+using Photon.Realtime;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +17,10 @@ using UnityEngine.SceneManagement;
 
 // 목적4: Setting 버튼을 누르면 Option UI가 켜진다. 동시에 게임 속도를 조절한다.(0 or 1)
 // 목적5: 게임 오버 시 Retry, Exit 버튼을 활성화.
+
+// 목적6: 게임이 시작되면 Photon Network용 Player를 생성
+// 목적7: Clent로서 접속이 되면(GameManager가 생성되면),
+//        PhotonNetwork에 접속한 플레이어들을 확인해서 내 번호를 지정한다.
 public class GameManager : MonoBehaviour
 {
     // 싱글톤 선엉
@@ -42,11 +48,28 @@ public class GameManager : MonoBehaviour
     // 4. OptionUI 게임 오브젝트
     public GameObject optionUI;
 
+    // 6. Player prefab PhotonView
+    public PhotonView playerPrefab;
+    // 플레이어 수
+    public int myPlayerNum = 0;
+
+
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
+        }
+
+        // 7. 플레이어 수 확인
+        Player[] players = PhotonNetwork.PlayerList;
+        foreach (Player p in players)
+        {
+            // LocalPlayer == 나 이므로 내가 아니라면
+            if (p != PhotonNetwork.LocalPlayer)
+            {
+                myPlayerNum++;
+            }
         }
     }
 
@@ -57,13 +80,20 @@ public class GameManager : MonoBehaviour
 
         StartCoroutine(GameStart());
 
-        player = GameObject.Find("Player").GetComponent<PlayerMovement>();
-
         animator = GetComponentInChildren<Animator>();
     }
 
     IEnumerator GameStart()
     {
+        yield return new WaitUntil(() => MainGameManager.Instance.isloadPoints);
+
+        GameObject playerObj = PhotonNetwork.Instantiate(playerPrefab.name, MainGameManager.Instance.spawnPoints[myPlayerNum].position, Quaternion.identity);
+
+        player = playerObj.GetComponent<PlayerMovement>();
+
+        // MainGameManager에서 시작할 준비가 되면 시작되도록 대기한다.
+        yield return new WaitUntil(() => MainGameManager.Instance.isGameStarted);
+
         // 2초 대기
         yield return new WaitForSeconds(2);
 

@@ -14,7 +14,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public TMP_Text logText;
 
-    public int sceneNumber = 2;
+    public string sceneName = "LoadingScene";
+
+    public GameObject mainGameManager;
 
     // 로비에 방을 만든다.
     public void CreatRoom()
@@ -33,7 +35,18 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         Debug.Log("방에 입장됨.");
         logText.text = "Room Joined!";
 
-        SceneManager.LoadScene(sceneNumber);
+        MainGameManager.Instance.maxHeadCount--;
+        SceneManager.LoadScene(sceneName);
+    }
+
+    // 방을 만든 사람만(방장만) MainGameManager를 가진다.
+    public override void OnCreatedRoom()
+    {
+        base.OnCreatedRoom();
+
+        // DontDestroyOnLoad : 다음씬으로 넘어가도 해당 오브젝트가 계속 유지된다.
+        DontDestroyOnLoad(mainGameManager);
+        mainGameManager.SetActive(true);
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)

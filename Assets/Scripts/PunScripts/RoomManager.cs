@@ -1,11 +1,12 @@
 using Photon.Pun;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // 목적 : 방의 정보를 보여주고, leave Room 버튼을 눌러서 방을 나갈 수 있다.
+
+// 목적2: Photon view를  가진 플레이어를 생성한다.
 public class RoomManager : MonoBehaviourPunCallbacks
 {
     // 방 정보
@@ -13,9 +14,23 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public int lobbySceneNumber = 1;
 
+    // Photon view 플레이어
+    public PhotonView[] playerPrefab;
+
+    public bool isConnect = false;
+
+    int cnt = 0;
+
     private void Update()
     {
         ShowRoomInfo();
+
+        if (cnt == 0 && Input.anyKey)
+        {
+            int ranNum = Random.Range(0, playerPrefab.Length);
+            PhotonNetwork.Instantiate(playerPrefab[ranNum].name, Vector3.zero, Quaternion.identity);
+            cnt++;
+        }
     }
 
     // 방 정보 보여주기
