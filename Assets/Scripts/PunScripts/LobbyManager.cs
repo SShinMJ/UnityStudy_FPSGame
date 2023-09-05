@@ -18,6 +18,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public GameObject mainGameManager;
 
+    public GameObject mainManager;
+
     // 로비에 방을 만든다.
     public void CreatRoom()
     {
@@ -44,6 +46,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         base.OnCreatedRoom();
 
+        // Photon Network 동기화
+        GameObject mainManagerObj = PhotonNetwork.Instantiate(mainGameManager.name, Vector3.zero, Quaternion.identity);
         // DontDestroyOnLoad : 다음씬으로 넘어가도 해당 오브젝트가 계속 유지된다.
         DontDestroyOnLoad(mainGameManager);
         mainGameManager.SetActive(true);

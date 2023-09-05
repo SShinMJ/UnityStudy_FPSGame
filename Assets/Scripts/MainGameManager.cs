@@ -27,6 +27,11 @@ public class MainGameManager : MonoBehaviour
     // 최대 참여 인원수
     public int maxHeadCount = 4;
 
+    public void GetGameState(out bool _isGameStarted)
+    {
+        _isGameStarted = isGameStarted;
+    }
+
     private void Awake()
     {
         if(Instance == null)

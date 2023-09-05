@@ -83,7 +83,7 @@ public class EnemyFSM : MonoBehaviour
         enemyState = EnemyState.Idle;
 
         // 플레이어 트랜스폼 받아오기
-        player = GameObject.Find("Player").transform;
+        player = GameObject.Find("Player(Clone)").transform;
 
         // 적 오브젝트 컨트롤러 받아오기
         characterController = GetComponent<CharacterController>();

@@ -83,15 +83,15 @@ public class JsonExample : MonoBehaviour
 
         // monster1을 jSON 형식으로 만들어준다.
         string json = JsonUtility.ToJson(monster1);
-        string newtonJson = JsonConvert.SerializeObject(json);
+        //string newtonJson = JsonConvert.SerializeObject(json);
 
-        JObject keyValuePairs = JObject.Parse(newtonJson);
+        //JObject keyValuePairs = JObject.Parse(newtonJson);
 
-        JObject stageHead = (JObject)keyValuePairs["stages"];
-        if (stageHead.ContainsKey("monsters"))
-        {
-            print(stageHead["monsters"]["name"].ToString());
-        }
+        //JObject stageHead = (JObject)keyValuePairs["stages"];
+        //if (stageHead.ContainsKey("monsters"))
+        //{
+        //    print(stageHead["monsters"]["name"].ToString());
+        //}
         // WriteJson();
 
         ReadJson(StageDataReader());

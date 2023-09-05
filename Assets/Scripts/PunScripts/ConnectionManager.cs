@@ -11,7 +11,13 @@ public class ConnectionManager : MonoBehaviourPunCallbacks
     }
 
     // 한줄자리 코드는 람다식으로 표현 가능하다.
-    public void Connect() => PhotonNetwork.ConnectUsingSettings();
+    public void Connect()
+    {
+        // AutomaticallySyncScene: 마스터 클라이언트와 일반 클라이언트들이 레벨을 동기화할지 결정
+        // true로 설정하면 마스터 클라에서 LoadLevel()로 레벨을 변경하면 모든 클라이언트들이 자동으로 동일한 레벨을 로드.
+        PhotonNetwork.AutomaticallySyncScene = true;
+        PhotonNetwork.ConnectUsingSettings();
+    }
 
     // PUN에 정의된 함수를 사용.(f12눌러 확인 가능)
     // 포톤 서버 연결시 호출된다.

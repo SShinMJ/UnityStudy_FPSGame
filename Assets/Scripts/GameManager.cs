@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 // 목적 : 게임의 상태를 구별하고, 게임의 시작과 끝을 Text UI로 표현.
 //       'Ready'상태에서 2초 후 'Start' 상태로 변경되며 게임 시작.
@@ -53,6 +54,8 @@ public class GameManager : MonoBehaviour
     // 플레이어 수
     public int myPlayerNum = 0;
 
+    // 게임 시작 시 활성화할 적 그룹
+    public GameObject groupEnemies;
 
     private void Awake()
     {
@@ -83,16 +86,29 @@ public class GameManager : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
     }
 
+    bool isGameStarted = false;
     IEnumerator GameStart()
     {
+        PhotonView mainGameManagerPV = GameObject.FindAnyObjectByType<MainGameManager>().GetComponent<PhotonView>();
+        mainGameManagerPV.RPC("GetGameState", RpcTarget.All, isGameStarted);
+
         yield return new WaitUntil(() => MainGameManager.Instance.isloadPoints);
 
         GameObject playerObj = PhotonNetwork.Instantiate(playerPrefab.name, MainGameManager.Instance.spawnPoints[myPlayerNum].position, Quaternion.identity);
 
         player = playerObj.GetComponent<PlayerMovement>();
+        animator = player.GetComponent<Animator>();
 
         // MainGameManager에서 시작할 준비가 되면 시작되도록 대기한다.
         yield return new WaitUntil(() => MainGameManager.Instance.isGameStarted);
+
+        groupEnemies.SetActive(true);
+
+        GameObject[] enemyCanvasList = GameObject.FindGameObjectsWithTag("Enemy Canvas");
+        foreach(var canvas in enemyCanvasList)
+        {
+            canvas.GetComponent<HpBarTarget>().target = playerObj.transform;
+        }
 
         // 2초 대기
         yield return new WaitForSeconds(2);
@@ -116,7 +132,7 @@ public class GameManager : MonoBehaviour
         if(player.playerHp <= 0)
         {
             // 애니메이션 멈추기
-            //animator.SetFloat("MoveMotion", 0f);
+            animator.SetFloat("MoveMotion", 0f);
 
             // 텍스트 보이기
             gameStatusTxt.gameObject.SetActive(true);
@@ -142,7 +158,8 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        CheckGameOver();
+        if(MainGameManager.Instance.isGameStarted)
+            CheckGameOver();
     }
 
     internal void SetActive(bool v)
