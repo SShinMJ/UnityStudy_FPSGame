@@ -2,11 +2,9 @@ using Photon.Pun;
 using Photon.Realtime;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 // 목적 : 게임의 상태를 구별하고, 게임의 시작과 끝을 Text UI로 표현.
 //       'Ready'상태에서 2초 후 'Start' 상태로 변경되며 게임 시작.
@@ -56,6 +54,7 @@ public class GameManager : MonoBehaviour
 
     // 게임 시작 시 활성화할 적 그룹
     public GameObject groupEnemies;
+    public GameObject[] enemyPrefabs;
 
     // SpawnPoint들을 담는 배열
     public Transform[] spawnPoints;
@@ -89,7 +88,6 @@ public class GameManager : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
     }
 
-    bool isGameStarted = false;
     IEnumerator GameStart()
     {
         // 방에 있는 상태임을 네트워크에서 확인하면
@@ -101,7 +99,11 @@ public class GameManager : MonoBehaviour
         player = playerObj.GetComponent<PlayerMovement>();
         animator = player.GetComponent<Animator>();
 
-        groupEnemies.SetActive(true);
+        //groupEnemies.SetActive(true);
+        int ran = UnityEngine.Random.Range(0, enemyPrefabs.Length);
+        PhotonNetwork.Instantiate(enemyPrefabs[ran].name, spawnPoints[myPlayerNum].position, Quaternion.identity);
+        // 네비게이션 다시 굽기
+        //HumannoidSurface.Build
 
         GameObject[] enemyCanvasList = GameObject.FindGameObjectsWithTag("Enemy Canvas");
         foreach(var canvas in enemyCanvasList)

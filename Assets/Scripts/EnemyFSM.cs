@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -22,7 +23,7 @@ using UnityEngine.UI;
 // 목적8 : Enemy의 초기 속도를 Agent의 속도에 적용.
 
 // 목적9 : 에이전트가 NavMeshLink에 올라가고 내려간다면 점프 애니메이션을 넣는다.
-public class EnemyFSM : MonoBehaviour
+public class EnemyFSM : MonoBehaviour, IPunObservable
 {
     // 1. 적의 현재 상태(대기, 이동, 공격, 원위치, 피격, 죽음)
     // enum : 열거형
@@ -77,6 +78,9 @@ public class EnemyFSM : MonoBehaviour
     // 6. 네비게이션 에이전트
     NavMeshAgent navMeshAgent;
 
+    // 적의 Photon View
+    PhotonView pv;
+
     void Start()
     {
         // 시작 시, 적의 상태는 대기 상태.
@@ -101,41 +105,51 @@ public class EnemyFSM : MonoBehaviour
 
         // 8. 네비게이션 에이전트에 속도값 지정
         navMeshAgent.speed = moveSpeed;
+
+        pv = GetComponent<PhotonView>();
     }
 
     void Update()
-    {
-        // GameManager에서 'Start' 상태가 아니라면 조작 불가.
-        if (GameManager.Instance.status != GameManager.GameStatus.Start)
+    { 
+        if(pv.IsMine)
         {
-            return;
-        }
+            // GameManager에서 'Start' 상태가 아니라면 조작 불가.
+            if (GameManager.Instance.status != GameManager.GameStatus.Start)
+            {
+                return;
+            }
 
-        // 적 동작 상태 변경
-        switch (enemyState)
+            // 적 동작 상태 변경
+            switch (enemyState)
+            {
+                case EnemyState.Idle:
+                    Idle();
+                    break;
+                case EnemyState.Move:
+                    Move();
+                    break;
+                case EnemyState.Attack:
+                    Attack();
+                    break;
+                case EnemyState.Return:
+                    Return();
+                    break;
+                case EnemyState.Damaged:
+                    //Damaged();
+                    break;
+                case EnemyState.Die:
+                    //Die();
+                    break;
+            }
+
+            // 4. 현재 적 hp를 hp슬라이더에 적용
+            hpSlider.value = (float)enemyHp / (float)maxHp;
+        }
+        else
         {
-            case EnemyState.Idle:
-                Idle();
-                break;
-            case EnemyState.Move:
-                Move();
-                break;
-            case EnemyState.Attack:
-                Attack();
-                break;
-            case EnemyState.Return:
-                Return();
-                break;
-            case EnemyState.Damaged:
-                //Damaged();
-                break;
-            case EnemyState.Die:
-                //Die();
-                break;
+            transform.position = Vector3.Lerp(transform.position, receivePos, Time.deltaTime * 20);
+            transform.rotation = Quaternion.Lerp(transform.rotation, receiveRot, Time.deltaTime * 20);
         }
-
-        // 4. 현재 적 hp를 hp슬라이더에 적용
-        hpSlider.value = (float)enemyHp / (float)maxHp;
     }
 
     private void Idle()
@@ -158,58 +172,58 @@ public class EnemyFSM : MonoBehaviour
 
     private void Move()
     {
-        // magnitude : (피타고라스 정의에 의한)벡터의 길이를 반환한다. 즉, 거리(크기)를 의미한다.
-        float distanceToPlayer = (player.position - transform.position).magnitude;
+            // magnitude : (피타고라스 정의에 의한)벡터의 길이를 반환한다. 즉, 거리(크기)를 의미한다.
+            float distanceToPlayer = (player.position - transform.position).magnitude;
 
-        // 초기 위치에서 적과의 거리
-        float distanceToOriginPos = (originPos - transform.position).magnitude;
+            // 초기 위치에서 적과의 거리
+            float distanceToOriginPos = (originPos - transform.position).magnitude;
 
-        // 플레이어를 따라가다 초기 위치에서 일정 거리를 벗어나면
-        if (distanceToOriginPos > maxMoveDistance)
-        {
-            enemyState = EnemyState.Return;
-            print("적 상태전환 : 따라감 > 돌아감");
-        }
-        // 플레이어와의 거리가 공격 범위 밖이면
-        else if (distanceToPlayer > attackDistance)
-        {
-            // 9. 오르고 내려가고 있다면
-            // isOnOffMeshLink : 에이전트가 현재 OffMeshLink에 위치하는 지 확인
-            if (navMeshAgent.isOnOffMeshLink)
+            // 플레이어를 따라가다 초기 위치에서 일정 거리를 벗어나면
+            if (distanceToOriginPos > maxMoveDistance)
             {
-                // 점프 애니메이션 실행
-                // navMeshAgent가 있는 object를 반환한다.
-                object navMeshOwner = navMeshAgent.navMeshOwner;
-                // navMeshAgent 컴포넌트를 가지고 있는 오브젝트를 반환.
-                GameObject navMeshGo = (navMeshOwner as Component).gameObject;
+                enemyState = EnemyState.Return;
+                print("적 상태전환 : 따라감 > 돌아감");
             }
+            // 플레이어와의 거리가 공격 범위 밖이면
+            else if (distanceToPlayer > attackDistance)
+            {
+                // 9. 오르고 내려가고 있다면
+                // isOnOffMeshLink : 에이전트가 현재 OffMeshLink에 위치하는 지 확인
+                if (navMeshAgent.isOnOffMeshLink)
+                {
+                    // 점프 애니메이션 실행
+                    // navMeshAgent가 있는 object를 반환한다.
+                    object navMeshOwner = navMeshAgent.navMeshOwner;
+                    // navMeshAgent 컴포넌트를 가지고 있는 오브젝트를 반환.
+                    GameObject navMeshGo = (navMeshOwner as Component).gameObject;
+                }
 
-            // 플레이어를 따라간다. (normalized : 방향벡터를 1크기로 평준화하여 단위벡터(방향벡터)로 만듦)
-            /*Vector3 dir = (player.position - transform.position).normalized;
-            characterController.Move(dir * moveSpeed * Time.deltaTime);
-            transform.forward = dir;*/
+                // 플레이어를 따라간다. (normalized : 방향벡터를 1크기로 평준화하여 단위벡터(방향벡터)로 만듦)
+                /*Vector3 dir = (player.position - transform.position).normalized;
+                characterController.Move(dir * moveSpeed * Time.deltaTime);
+                transform.forward = dir;*/
 
-            // 7. 이동을 멈추고 경로 초기화.
-            navMeshAgent.isStopped = true;
-            navMeshAgent.ResetPath();
+                // 7. 이동을 멈추고 경로 초기화.
+                navMeshAgent.isStopped = true;
+                navMeshAgent.ResetPath();
 
-            // 6. 네비게이션 에이전트의 최소 거리 입력, 플레이어 쫓아감.
-            navMeshAgent.stoppingDistance = attackDistance;
-            navMeshAgent.SetDestination(player.position);
-        }
-        // 플레이어와의 거리가 공격 범위 안이면
-        else if (distanceToPlayer < attackDistance)
-        {
-            // 동작 상태를 Attack으로 바꿔준다.
-            print("적 상태전환 : 따라감 > 공격");
-            enemyState = EnemyState.Attack;
+                // 6. 네비게이션 에이전트의 최소 거리 입력, 플레이어 쫓아감.
+                navMeshAgent.stoppingDistance = attackDistance;
+                navMeshAgent.SetDestination(player.position);
+            }
+            // 플레이어와의 거리가 공격 범위 안이면
+            else if (distanceToPlayer < attackDistance)
+            {
+                // 동작 상태를 Attack으로 바꿔준다.
+                print("적 상태전환 : 따라감 > 공격");
+                enemyState = EnemyState.Attack;
 
-            // 'Attack' Animation으로 전환을 위해 트리거 발동
-            animator.SetTrigger("MoveToAttack");
+                // 'Attack' Animation으로 전환을 위해 트리거 발동
+                animator.SetTrigger("MoveToAttack");
 
-            // 바로 공격
-            currentTime = attackDelay;
-        }
+                // 바로 공격
+                currentTime = attackDelay;
+            }
     }
 
     private void Attack()
@@ -359,5 +373,22 @@ public class EnemyFSM : MonoBehaviour
 
         print("사망");
         Destroy(gameObject);
+    }
+
+    Vector3 receivePos;
+    Quaternion receiveRot;
+    // 다른 사용자의 적 클론들에게 위치와 회전을 동기화.
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(receivePos);
+            stream.SendNext(receiveRot);
+        }
+        else
+        {
+            receivePos = (Vector3)stream.ReceiveNext();
+            receiveRot = (Quaternion)stream.ReceiveNext();
+        }
     }
 }
