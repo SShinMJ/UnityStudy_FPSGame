@@ -15795,7 +15795,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!114 &1859739417
 MonoBehaviour:
@@ -15815,6 +15815,11 @@ MonoBehaviour:
   playerPrefab: {fileID: 6507137660607237402, guid: fb6ad44d1eeaa17459a94e80f885a056, type: 3}
   myPlayerNum: 0
   groupEnemies: {fileID: 854961553}
+  spawnPoints:
+  - {fileID: 679037677}
+  - {fileID: 21063506}
+  - {fileID: 1180314666}
+  - {fileID: 864287917}
 --- !u!4 &1859739418
 Transform:
   m_ObjectHideFlags: 0

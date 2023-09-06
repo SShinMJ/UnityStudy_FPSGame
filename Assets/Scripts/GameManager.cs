@@ -57,6 +57,9 @@ public class GameManager : MonoBehaviour
     // 게임 시작 시 활성화할 적 그룹
     public GameObject groupEnemies;
 
+    // SpawnPoint들을 담는 배열
+    public Transform[] spawnPoints;
+
     private void Awake()
     {
         if (Instance == null)
@@ -89,18 +92,14 @@ public class GameManager : MonoBehaviour
     bool isGameStarted = false;
     IEnumerator GameStart()
     {
-        PhotonView mainGameManagerPV = GameObject.FindAnyObjectByType<MainGameManager>().GetComponent<PhotonView>();
-        mainGameManagerPV.RPC("GetGameState", RpcTarget.All, isGameStarted);
+        // 방에 있는 상태임을 네트워크에서 확인하면
+        yield return new WaitUntil(() => PhotonNetwork.InRoom);
 
-        yield return new WaitUntil(() => MainGameManager.Instance.isloadPoints);
-
-        GameObject playerObj = PhotonNetwork.Instantiate(playerPrefab.name, MainGameManager.Instance.spawnPoints[myPlayerNum].position, Quaternion.identity);
+        // 플레이어, 적 오브젝트 생성
+        GameObject playerObj = PhotonNetwork.Instantiate(playerPrefab.name, spawnPoints[myPlayerNum].position, Quaternion.identity);
 
         player = playerObj.GetComponent<PlayerMovement>();
         animator = player.GetComponent<Animator>();
-
-        // MainGameManager에서 시작할 준비가 되면 시작되도록 대기한다.
-        yield return new WaitUntil(() => MainGameManager.Instance.isGameStarted);
 
         groupEnemies.SetActive(true);
 
@@ -158,7 +157,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if(MainGameManager.Instance.isGameStarted)
+        if(player != null)
             CheckGameOver();
     }
 

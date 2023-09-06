@@ -66,9 +66,6 @@ public class LoadingNextScene : MonoBehaviour
             {
                 // 90퍼 이상 로드되면 씬을 보이게 한다.
                 asyncOperation.allowSceneActivation = true;
-
-                MainGameManager.Instance.setSpawnPoints();
-                MainGameManager.Instance.StartTimer();
             }
 
             yield return null;

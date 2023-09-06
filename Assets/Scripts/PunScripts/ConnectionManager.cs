@@ -16,6 +16,13 @@ public class ConnectionManager : MonoBehaviourPunCallbacks
         // AutomaticallySyncScene: 마스터 클라이언트와 일반 클라이언트들이 레벨을 동기화할지 결정
         // true로 설정하면 마스터 클라에서 LoadLevel()로 레벨을 변경하면 모든 클라이언트들이 자동으로 동일한 레벨을 로드.
         PhotonNetwork.AutomaticallySyncScene = true;
+
+        // 1초에 PhotonNetwork 변경사항을 몇 번 보낼 것인지 지정. default는 30
+        PhotonNetwork.SendRate = 30;
+        // 1초에 PhotonNetwork에서 데이터를 몇 번 받을 것인지 지정. default 10.
+        // 다른 플레이어의 이동이 끊김 없이 보이기 위해 값을 올린다.
+        PhotonNetwork.SerializationRate = 30;
+
         PhotonNetwork.ConnectUsingSettings();
     }
 

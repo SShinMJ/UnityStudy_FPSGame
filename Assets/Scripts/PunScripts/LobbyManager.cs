@@ -10,13 +10,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public TMP_InputField roomNameInput;
 
     // 플레이어 정원
-    public int maxPlayerNum = 5;
+    public int maxPlayerNum = 4;
 
     public TMP_Text logText;
 
     public string sceneName = "LoadingScene";
-
-    public GameObject mainGameManager;
 
     public GameObject mainManager;
 
@@ -37,20 +35,12 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         Debug.Log("방에 입장됨.");
         logText.text = "Room Joined!";
 
-        MainGameManager.Instance.maxHeadCount--;
         SceneManager.LoadScene(sceneName);
     }
 
-    // 방을 만든 사람만(방장만) MainGameManager를 가진다.
     public override void OnCreatedRoom()
     {
         base.OnCreatedRoom();
-
-        // Photon Network 동기화
-        GameObject mainManagerObj = PhotonNetwork.Instantiate(mainGameManager.name, Vector3.zero, Quaternion.identity);
-        // DontDestroyOnLoad : 다음씬으로 넘어가도 해당 오브젝트가 계속 유지된다.
-        DontDestroyOnLoad(mainGameManager);
-        mainGameManager.SetActive(true);
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
