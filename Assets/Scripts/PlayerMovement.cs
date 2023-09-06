@@ -79,6 +79,8 @@ public class PlayerMovement : MonoBehaviour, IPunObservable
             // 입력 받기
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
+            receivedH = h;
+            receivedV = v;
 
 
             // 점프가 끝났다면(캐릭터가 바닥에 닿아 있다면) (CollisionFlags.Below : 바닥)
@@ -122,8 +124,14 @@ public class PlayerMovement : MonoBehaviour, IPunObservable
         }
         else
         {
+            // 상대 플레이어의 위치, 회전값을 적용한다.
             transform.position = receivedPos;
             transform.rotation = receivedRot;
+
+            // 상대 플레이어의 입력값을 전달받아 애니메이션을 적용한다.
+            Vector3 dir = new Vector3(receivedH, 0, receivedV);
+            dir = Camera.main.transform.TransformDirection(dir);
+            animator.SetFloat("MoveMotion", dir.magnitude);
         }
     }
 
@@ -183,6 +191,8 @@ public class PlayerMovement : MonoBehaviour, IPunObservable
 
     Vector3 receivedPos;
     Quaternion receivedRot;
+    float receivedH;
+    float receivedV;
     // PhotonNetwork 동기화를 위한 PhotonStream(데이터)를 보내고 받는다.
     // PhotonStream에는 각 플레이어의 position과 rotation을 보내고 받는다.
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -192,12 +202,26 @@ public class PlayerMovement : MonoBehaviour, IPunObservable
         {
             stream.SendNext(transform.position);
             stream.SendNext(transform.rotation);
+            stream.SendNext(receivedH);
+            stream.SendNext(receivedV);
         }
         // stream.IsWriting. 현재 플레이어쪽에 있는 상대 플레이어의 위치, 회전 데이터를 받는다.
         else
         {
             receivedPos = (Vector3)stream.ReceiveNext();
             receivedRot = (Quaternion)stream.ReceiveNext();
+            receivedH = (float)stream.ReceiveNext();
+            receivedV = (float)stream.ReceiveNext();
         }
     }
+
+    // 상대 플레이어에게 나의 애니메이션을 전달.
+    //[PunRPC]
+    //void SendAniData()
+    //{
+    //    Vector3 dir = new Vector3(h, 0, v);
+    //    dir = Camera.main.transform.TransformDirection(dir);
+
+    //    animator.SetFloat("MoveMotion", dir.magnitude);
+    //}
 }
